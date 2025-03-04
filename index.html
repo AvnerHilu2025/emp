@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EIS Council EMP Analysis Tool</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--box-shadow);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .logo img {
+            height: 50px;
+            margin-right: 15px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .card h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--light-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .card h2 i {
+            margin-right: 0.75rem;
+            color: var(--secondary-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .tooltip {
+            margin-left: 0.75rem;
+            color: #7f8c8d;
+            cursor: help;
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 220px;
+            background-color: var(--dark-color);
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85rem;
+            box-shadow: var(--box-shadow);
+        }
+
+        .tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--dark-color) transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button i {
+            margin-right: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #bdc3c7;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-danger {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-lg {
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .btn-disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .results-container {
+            display: none;
+        }
+
+        .results-summary {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            background-color: rgba(52, 152, 219, 0.1);
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .chart-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--light-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-tab {
+            padding: 0.75rem 1.25rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .chart-tab.active {
+            border-bottom: 3px solid var(--secondary-color);
+            color: var(--secondary-color);
+        }
+
+        .chart-tab:hover:not(.active) {
+            background-color: var(--light-color);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        #empChart, #plot3D {
+            width: 100%;
+            height: 100%;
+        }
+
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: var(--box-shadow);
+        }
+
+        table th, table td {
+            padding: 0.75rem;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: var(--light-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            margin-top: 2rem;
+        }
+
+        .footer p {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer a {
+            color: var(--light-color);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            display: block;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            max-width: 800px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateY(-50px);
+            transition: transform 0.3s ease;
+            position: relative;
+            resize: both;
+            overflow: auto;
+            min-width: 400px;
+            min-height: 300px;
+            cursor: move;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--light-color);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .close-btn {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark-color);
+            transition: var(--transition);
+        }
+
+        .close-btn:hover {
+            color: var(--accent-color);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--light-color);
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            main {
+                padding: 1rem;
+            }
+
+            .button-container {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            .chart-tabs {
+                flex-wrap: wrap;
+            }
+
+            .chart-tab {
+                flex: 1 1 50%;
+                text-align: center;
+            }
+
+            .modal-content {
+                margin: 20% auto;
+                width: 90%;
+            }
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid white;
+            border-radius: 50%;
+            border-top-color: var(--secondary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Download button */
+        .download-btn {
+            margin-left: auto;
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .download-btn:hover {
+            background-color: #27ae60;
+        }
+
+        /* Alert styles */
+        .alert {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-left-color: var(--success-color);
+            color: #27ae60;
+        }
+
+        .alert-warning {
+            background-color: rgba(243, 156, 18, 0.1);
+            border-left-color: var(--warning-color);
+            color: #d35400;
+        }
+
+        .alert-danger {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-left-color: var(--accent-color);
+            color: #c0392b;
+        }
+
+        /* Badge styles */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
+        }
+
+        .badge-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .badge-danger {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .badge-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        /* Chart legend styles */
+        .custom-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 1rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            border-radius: 4px;
+        }
+
+        /* Added animation for page load */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+    </div>
+
+    <header>
+        <div class="logo">
+            <i class="fas fa-bolt fa-2x"></i>
+            <h1>EIS Council EMP Analysis Tool</h1>
+        </div>
+        <p class="subtitle">Advanced Electromagnetic Pulse Impact Assessment</p>
+    </header>
+
+    <main>
+        <!-- Input Parameters -->
+        <div class="card fade-in">
+            <h2><i class="fas fa-sliders-h"></i> Input Parameters</h2>
+            <div class="form-group">
+                <label for="strength">Strength of Explosion (kT):</label>
+                <div class="input-wrapper">
+                    <input type="number" id="strength" value="1000" min="1" max="10000">
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">Range: 1-10,000 kilotons of TNT. Higher values indicate stronger explosions.</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="height">Height of Explosion (km):</label>
+                <div class="input-wrapper">
+                    <input type="number" id="height" value="100" min="30" max="500">
+                    <div class="tooltip">
+                        <i class="fas fa-info-circle"></i>
+                        <span class="tooltip-text">Range: 30-500 kilometers. High-altitude detonations produce stronger EMP effects.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button id="runAnalysisBtn" class="btn-primary btn-lg">
+                    <i class="fas fa-play"></i> Run Analysis
+                </button>
+                <button id="viewSectorsBtn" class="btn-secondary" disabled>
+                    <i class="fas fa-building"></i> Sector Analysis
+                </button>
+                <button id="exportBtn" class="btn-success" disabled>
+                    <i class="fas fa-file-export"></i> Export Results
+                </button>
+                <button id="resetBtn" class="btn-danger">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+                <button id="exitBtn" class="btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Exit
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="card results-container fade-in">
+            <h2><i class="fas fa-chart-line"></i> Analysis Results</h2>
+            
+            <div id="resultsAlert" class="alert alert-success">
+                <strong>Analysis completed successfully!</strong> 
+                <div id="resultsSummary"></div>
+            </div>
+
+            <div class="chart-tabs">
+                <div class="chart-tab active" data-chart="empFieldStrength">
+                    <i class="fas fa-bolt"></i> EMP Field Strength
+                </div>
+                <div class="chart-tab" data-chart="empIntensity">
+                    <i class="fas fa-radiation"></i> EMP Intensity
+                </div>
+                <div class="chart-tab" data-chart="areaEffect">
+                    <i class="fas fa-globe"></i> Area Effect (3D)
+                </div>
+                <div class="chart-tab" data-chart="damageInfluence">
+                    <i class="fas fa-exclamation-triangle"></i> Damage Influence
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="empChart"></canvas>
+                <div id="plot3D" style="display: none;"></div>
+            </div>
+
+            <button id="viewResultsBtn" class="btn-secondary">
+                <i class="fas fa-table"></i> View Detailed Results
+            </button>
+        </div>
+
+        <!-- Sector Analysis Modal -->
+        <div id="sectorModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Sector Impact Analysis</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="runSectorAnalysisBtn" class="btn-primary" style="margin: 0; height: 36px;">
+                            <i class="fas fa-calculator"></i> Run Sector Analysis
+                        </button>
+                        <button id="closeSectorBtn" class="btn-secondary" style="margin: 0; height: 36px;">
+                            <i class="fas fa-times"></i> Close
+                        </button>
+                        <span class="close-btn" id="closeSectorModal">&times;</span>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <table id="sectorTable">
+                        <thead>
+                            <tr>
+                                <th>Sector</th>
+                                <th>Redundancy (R)</th>
+                                <th>Mitigation (M)</th>
+                                <th>Response Time (T)</th>
+                                <th>Vulnerability (V)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Electricity</td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.8"></td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.7"></td>
+                                <td><input type="number" min="0.1" step="0.1" value="1.5"></td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.9"></td>
+                            </tr>
+                            <tr>
+                                <td>Water</td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.7"></td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.6"></td>
+                                <td><input type="number" min="0.1" step="0.1" value="2.0"></td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.8"></td>
+                            </tr>
+                            <tr>
+                                <td>Communication</td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.9"></td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.8"></td>
+                                <td><input type="number" min="0.1" step="0.1" value="1.2"></td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.85"></td>
+                            </tr>
+                            <tr>
+                                <td>Transportation</td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.6"></td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.5"></td>
+                                <td><input type="number" min="0.1" step="0.1" value="2.5"></td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.75"></td>
+                            </tr>
+                            <tr>
+                                <td>Fuel/Natural Gas</td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.7"></td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.6"></td>
+                                <td><input type="number" min="0.1" step="0.1" value="2.0"></td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.8"></td>
+                            </tr>
+                            <tr>
+                                <td>Finance</td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.9"></td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.8"></td>
+                                <td><input type="number" min="0.1" step="0.1" value="1.1"></td>
+                                <td><input type="number" min="0" max="1" step="0.1" value="0.95"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div id="sectorChartContainer" class="chart-container" style="display: none; margin-top: 2rem;">
+                        <canvas id="sectorChart"></canvas>
+                    </div>
+                </div>
+                <!-- Removed the modal-footer since buttons were moved to header -->
+            </div>
+        </div>
+
+        <!-- Results Table Modal -->
+        <div id="resultsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Detailed Results</h3>
+                    <span class="close-btn" id="closeResultsModal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="table-container">
+                        <table id="resultTable">
+                            <thead>
+                                <tr>
+                                    <th>Distance (km)</th>
+                                    <th>EMP Field Strength (V/m)</th>
+                                    <th>EMP Intensity</th>
+                                    <th>Damage Influence</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Results will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="downloadResultsBtn" class="download-btn">
+                        <i class="fas fa-download"></i> Download CSV
+                    </button>
+                    <button id="closeTableBtn" class="btn-secondary">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>EIS Council EMP Analysis Tool - Advanced Edition</p>
+        <p>&copy; 2025 EIS Council - All Rights Reserved</p>
+    </footer>
+
+    <script>
+        // Constants
+        const CONSTANTS = {
+            'SPEED_OF_LIGHT': 299792458,    // m/s
+            'VACUUM_PERMITTIVITY': 8.85e-12, // F/m
+            'EMP_RISE_TIME': 1e-9,          // seconds
+            'EMP_PEAK_FIELD': 50000,        // V/m for reference yield
+            'REF_HEIGHT': 100,              // km, reference height
+            'REF_YIELD': 1000,              // kT, reference yield
+            'MAX_RESPONSE_TIME': 24,        // hours
+            'EARTH_RADIUS': 6371,           // km
+            'TNT_TO_JOULES': 4.184e12       // Joules per kiloton TNT
+        };
+
+        // Configuration parameters
+        const CONFIG = {
+            'MIN_YIELD': 1,          // kT
+            'MAX_YIELD': 10000,      // kT
+            'MIN_HEIGHT': 30,        // km
+            'MAX_HEIGHT': 500,       // km
+            'MAX_RADIUS': 2000,      // km
+            'UNCERTAINTY_FACTOR': 0.2 // 20% uncertainty in calculations
+        };
+
+        // Global variables
+        let empChartInstance = null;
+        let sectorChartInstance = null;
+        let resultsData = [];
+        let currentChartType = 'empFieldStrength';
+        let distances = [];
+        let fieldStrengths = [];
+        let intensities = [];
+        let damageValues = [];
+        let calculatedIntensity = null;
+        let chartObjects = {};
+
+        // DOM Elements
+        const runAnalysisBtn = document.getElementById('runAnalysisBtn');
+        const viewSectorsBtn = document.getElementById('viewSectorsBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsSummary = document.getElementById('resultsSummary');
+        const viewResultsBtn = document.getElementById('viewResultsBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        // Modal Elements
+        const sectorModal = document.getElementById('sectorModal');
+        const closeSectorModal = document.getElementById('closeSectorModal');
+        const closeSectorBtn = document.getElementById('closeSectorBtn');
+        const runSectorAnalysisBtn = document.getElementById('runSectorAnalysisBtn');
+        const resultsModal = document.getElementById('resultsModal');
+        const closeResultsModal = document.getElementById('closeResultsModal');
+        const closeTableBtn = document.getElementById('closeTableBtn');
+        const downloadResultsBtn = document.getElementById('downloadResultsBtn');
+
+        // Chart tabs
+        const chartTabs = document.querySelectorAll('.chart-tab');
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Chart.js defaults
+            Chart.defaults.color = '#2c3e50';
+            Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+            
+            // Set up event listeners
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Button click handlers
+            runAnalysisBtn.addEventListener('click', runAnalysis);
+            viewSectorsBtn.addEventListener('click', openSectorModal);
+            exportBtn.addEventListener('click', exportResults);
+            resetBtn.addEventListener('click', resetApplication);
+            viewResultsBtn.addEventListener('click', openResultsModal);
+            document.getElementById('exitBtn').addEventListener('click', exitApplication);
+            
+            // Modal handlers
+            closeSectorModal.addEventListener('click', closeSectorModalHandler);
+            closeSectorBtn.addEventListener('click', closeSectorModalHandler);
+            runSectorAnalysisBtn.addEventListener('click', runSectorAnalysis);
+            closeResultsModal.addEventListener('click', closeResultsModalHandler);
+            closeTableBtn.addEventListener('click', closeResultsModalHandler);
+            downloadResultsBtn.addEventListener('click', downloadResults);
+            
+            // Chart tab handlers
+            chartTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs
+                    chartTabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    tab.classList.add('active');
+                    // Update chart
+                    currentChartType = tab.dataset.chart;
+                    updateChart();
+                });
+            });
+            
+            // Special handler for 3D area effect
+            const areaEffectTab = document.querySelector('.chart-tab[data-chart="areaEffect"]');
+            if (areaEffectTab) {
+                areaEffectTab.onclick = function() {
+                    chartTabs.forEach(tab => tab.classList.remove('active'));
+                    this.classList.add('active');
+                    currentChartType = 'areaEffect';
+                    createAreaEffectPlot();
+                };
+            }
+        }
+
+     // Add this helper function
+        
+     // --------------------------------------------------------
+
+        function formatExponential(value, format = 'plain') {
+            if (typeof value === 'string') {
+                value = parseFloat(value);
+            }
+            const parts = value.toExponential(2).split('e');
+            const mantissa = parts[0];
+            const exponent = parseInt(parts[1]);
+            
+            // For HTML display (tables and summaries)
+            if (format === 'html') {
+                return `${mantissa} × 10<sup>${exponent}</sup>`;
+            }
+            
+            // For Chart.js axis (using Unicode superscripts)
+            const superscripts = {
+                '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', 
+                '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+                '+': '⁺', '-': '⁻'
+            };
+            
+            let superscriptExponent = '';
+            const exponentString = exponent.toString();
+            
+            for (let i = 0; i < exponentString.length; i++) {
+                superscriptExponent += superscripts[exponentString[i]] || exponentString[i];
+            }
+            
+            return `${mantissa} × 10${superscriptExponent}`;
+        }
+
+//-----------------------------------------------------
+        function exitApplication() {
+            // Show confirmation dialog
+            if (confirm("Are you sure you want to exit the application?")) {
+                // Try to close the window
+                window.close();
+        
+                // If window.close() doesn't work (common in many browsers for security reasons),
+                // show a message to the user
+                setTimeout(function() {
+                    alert("Please close this browser tab to exit the application.");
+                }, 300);
+            }
+        }
+
+        // Core calculation functions
+        function calculateEMPFieldStrength(S, h, r) {
+            // Validate inputs
+            validateInputs(S, h, r);
+            
+            // Scale factors
+            const yieldFactor = Math.sqrt(S / CONSTANTS.REF_YIELD);
+            const heightFactor = h / CONSTANTS.REF_HEIGHT;
+            
+            // Calculate slant range
+            const slantRange = Math.sqrt(r * r + h * h);
+            
+            // Atmospheric attenuation factor (simplified model)
+            const attenuation = Math.exp(-slantRange / 200);  // 200 km characteristic length
+            
+            // Calculate peak field
+            const E0 = CONSTANTS.EMP_PEAK_FIELD * yieldFactor * heightFactor * attenuation;
+            
+            return parseFloat(E0.toFixed(2));
+        }
+  
+        function calculateIntensity(S, h, r) {
+            const E = S * CONSTANTS.TNT_TO_JOULES;
+            const intensity = E / (r * r + h * h);
+            return parseFloat(intensity.toExponential(2));
+        }
+
+        function calculateDamageInfluence(fieldStrength, r, r0) {
+            // Basic damage model: field strength with inverse square falloff
+            const baseInfluence = fieldStrength / 50000; // Normalize to peak field
+            const falloff = Math.pow(r0 / Math.max(r, r0), 2);
+            return parseFloat((baseInfluence * falloff).toFixed(4));
+        }
+
+        function validateInputs(S, h, r) {
+            if (S < CONFIG.MIN_YIELD || S > CONFIG.MAX_YIELD) {
+                throw new Error(`Yield must be between ${CONFIG.MIN_YIELD} and ${CONFIG.MAX_YIELD} kT`);
+            }
+            
+            if (h < CONFIG.MIN_HEIGHT || h > CONFIG.MAX_HEIGHT) {
+                throw new Error(`Height must be between ${CONFIG.MIN_HEIGHT} and ${CONFIG.MAX_HEIGHT} km`);
+            }
+            
+            if (r < 0 || r > CONFIG.MAX_RADIUS) {
+                throw new Error(`Radius must be between 0 and ${CONFIG.MAX_RADIUS} km`);
+            }
+        }
+
+        // UI Functions
+        function runAnalysis() {
+            try {
+                showLoading();
+                
+                // Get input values
+                const S = parseFloat(document.getElementById("strength").value);
+                const h = parseFloat(document.getElementById("height").value);
+                
+                // Validate inputs
+                if (isNaN(S) || isNaN(h) || S <= 0 || h <= 0) {
+                    showAlert("Please enter valid numerical values.", "danger");
+                    hideLoading();
+                    return;
+                }
+                
+                validateInputs(S, h, 0);
+                
+                // Generate distance points
+                const numPoints = 50;
+                distances = Array.from({length: numPoints}, (_, i) => i * (CONFIG.MAX_RADIUS / numPoints));
+                
+                // Calculate field strengths and intensities
+                fieldStrengths = distances.map(r => calculateEMPFieldStrength(S, h, r));
+                intensities = distances.map(r => calculateIntensity(S, h, r));
+                
+                // Calculate damage values
+                const r0 = CONFIG.MIN_HEIGHT; // Reference distance
+                damageValues = distances.map((r, i) => calculateDamageInfluence(fieldStrengths[i], r, r0));
+                
+                // Calculate reference intensity (at r0)
+                calculatedIntensity = calculateIntensity(S, h, r0);
+                
+                // Save results for export
+                resultsData = distances.map((r, i) => {
+                    return {
+                        Distance: r,
+                        EMP_Field_Strength: fieldStrengths[i],
+                        EMP_Intensity: intensities[i],
+                        Damage_Influence: damageValues[i]
+                    };
+                });
+                
+                // Update UI
+                resultsSummary.innerHTML = `
+                   <p><strong>Peak EMP Field Strength:</strong> ${fieldStrengths[0].toLocaleString()} V/m</p>
+                   <p><strong>Reference Intensity at ${r0} km:</strong> ${formatExponential(calculatedIntensity, 'html')} J/m²</p>
+                   <p><strong>Analysis Parameters:</strong> ${S.toLocaleString()} kT yield at ${h} km altitude</p>
+                `;
+                
+                // Show results section
+                resultsSection.style.display = "block";
+                
+                // Enable sector analysis and export buttons
+                viewSectorsBtn.disabled = false;
+                exportBtn.disabled = false;
+                
+                // Update chart
+                updateChart();
+                
+                // Scroll to results
+                resultsSection.scrollIntoView({ behavior: 'smooth' });
+                
+                hideLoading();
+            } catch (error) {
+                showAlert(`Error: ${error.message}`, "danger");
+                hideLoading();
+            }
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById("empChart").getContext("2d");
+            document.getElementById("plot3D").style.display = "none";
+            document.getElementById("empChart").style.display = "none";
+            
+            // Destroy existing chart if any
+            if (empChartInstance) {
+                empChartInstance.destroy();
+            }
+            
+            if (currentChartType === 'areaEffect') {
+                // 3D plot using Plotly
+                document.getElementById("plot3D").style.display = "block";
+                createAreaEffectPlot();
+            } else {
+                // 2D charts using Chart.js
+                document.getElementById("empChart").style.display = "block";
+                
+                // Configure chart based on current type
+                let chartConfig = {
+                    type: 'line',
+                    data: {
+                        labels: distances,
+                        datasets: [{
+                            label: '',
+                            data: [],
+                            borderColor: '',
+                            backgroundColor: '',
+                            borderWidth: 2,
+                            pointRadius: 1,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Distance (km)'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: ''
+                                },
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                // Update chart config based on chart type
+                switch(currentChartType) {
+                    case 'empFieldStrength':
+                        chartConfig.data.datasets[0].label = 'EMP Field Strength (V/m)';
+                        chartConfig.data.datasets[0].data = fieldStrengths;
+                        chartConfig.data.datasets[0].borderColor = 'rgb(231, 76, 60)';
+                        chartConfig.data.datasets[0].backgroundColor = 'rgba(231, 76, 60, 0.1)';
+                        chartConfig.options.scales.y.title.text = 'Field Strength (V/m)';
+                        chartConfig.options.scales.y.ticks = {
+                            callback: function(value, index, values) {
+                                return formatExponential(value);
+                            }
+                        };
+                        
+                        // Add uncertainty band
+                        chartConfig.data.datasets.push({
+                            label: 'Uncertainty Range',
+                            data: [],
+                            borderColor: 'rgba(231, 76, 60, 0.3)',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            fill: false,
+                            borderWidth: 1,
+                            pointRadius: 0
+                        });
+                        
+                        // Calculate uncertainty bands
+                        const upperBand = fieldStrengths.map(v => v * (1 + CONFIG.UNCERTAINTY_FACTOR));
+                        const lowerBand = fieldStrengths.map(v => v * (1 - CONFIG.UNCERTAINTY_FACTOR));
+                        
+                        chartConfig.data.datasets.push({
+                            label: 'Upper Band',
+                            data: upperBand,
+                            borderColor: 'rgba(231, 76, 60, 0.3)',
+                            borderDash: [5, 5],
+                            fill: false,
+                            pointRadius: 0
+                        });
+                        
+                        chartConfig.data.datasets.push({
+                            label: 'Lower Band',
+                            data: lowerBand,
+                            borderColor: 'rgba(231, 76, 60, 0.3)',
+                            borderDash: [5, 5],
+                            fill: '-1',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            pointRadius: 0
+                        });
+                        break;
+                        
+                    case 'empIntensity':
+                        // Convert scientific notation to more readable format
+                        const formattedIntensities = intensities.map(i => {
+                            const num = Number(i);
+                            // If intensity is very small, show in scientific notation
+                            return num;
+                        });
+                        
+                        chartConfig.data.datasets[0].label = 'EMP Intensity';
+                        chartConfig.data.datasets[0].data = formattedIntensities;
+                        chartConfig.data.datasets[0].borderColor = 'rgb(52, 152, 219)';
+                        chartConfig.data.datasets[0].backgroundColor = 'rgba(52, 152, 219, 0.1)';
+                        chartConfig.options.scales.y.title.text = 'Intensity';
+                        chartConfig.options.scales.y = {
+		      type: 'logarithmic',
+		      title: {
+		          display: true,
+		          text: 'Intensity (J/m²)'
+		     },
+		     ticks: {
+		          callback: function(value, index, values) {
+		               return formatExponential(value);
+		          }
+		    }
+                        };
+                        
+                        // Custom tooltip for scientific notation
+                       chartConfig.options.plugins.tooltip.callbacks.label = function(context) {
+                           const value = context.raw;
+                           return `${context.dataset.label}: ${formatExponential(value, 'html')} J/m²`;
+                       };
+                        break;
+                        
+                    case 'damageInfluence':
+                        chartConfig.data.datasets[0].label = 'Damage Influence';
+                        chartConfig.data.datasets[0].data = damageValues;
+                        chartConfig.data.datasets[0].borderColor = 'rgb(155, 89, 182)';
+                        chartConfig.data.datasets[0].backgroundColor = 'rgba(155, 89, 182, 0.1)';
+                        chartConfig.options.scales.y.title.text = 'Damage Influence';
+                        
+                        // Add threshold lines
+                        const thresholds = [
+                            { value: 0.8, label: 'Severe Damage', color: 'rgba(231, 76, 60, 0.8)' },
+                            { value: 0.5, label: 'Moderate Damage', color: 'rgba(243, 156, 18, 0.8)' },
+                            { value: 0.2, label: 'Light Damage', color: 'rgba(46, 204, 113, 0.8)' }
+                        ];
+                        
+                        chartConfig.options.plugins.annotation = {
+                            annotations: {}
+                        };
+                        
+                        thresholds.forEach((threshold, index) => {
+                            chartConfig.options.plugins.annotation.annotations[`line${index}`] = {
+                                type: 'line',
+                                yMin: threshold.value,
+                                yMax: threshold.value,
+                                borderColor: threshold.color,
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                label: {
+                                    content: threshold.label,
+                                    display: true,
+                                    position: 'right',
+                                    backgroundColor: threshold.color
+                                }
+                            };
+                        });
+                        break;
+                }
+                
+                empChartInstance = new Chart(ctx, chartConfig);
+            }
+        }
+
+        // Replace the createAreaEffectPlot function with this updated version:
+        function createAreaEffectPlot() {
+            const S = parseFloat(document.getElementById("strength").value);
+            const h = parseFloat(document.getElementById("height").value);
+            
+            // Generate 3D data
+            let x = [], y = [], z = [], intensity = [];
+            let maxRadius = Math.min(CONFIG.MAX_RADIUS, 500); // Limit for better visualization
+            let numPoints = 50;
+            
+            for (let r = 0; r <= maxRadius; r += maxRadius / numPoints) {
+                for (let theta = 0; theta < 2 * Math.PI; theta += Math.PI / 20) {
+                    // Calculate field strength at this point
+                    const fieldStrength = calculateEMPFieldStrength(S, h, r);
+                    const normalizedField = fieldStrength / CONSTANTS.EMP_PEAK_FIELD;
+                    
+                    // Create cone shape with height proportional to field strength
+                    const height = 40 * normalizedField;
+                    
+                    x.push(r * Math.cos(theta));
+                    y.push(r * Math.sin(theta));
+                    z.push(height);
+                    intensity.push(normalizedField);
+                }
+            }
+            
+            const data = [{
+                x: x,
+                y: y,
+                z: z,
+                type: "mesh3d",
+                intensity: intensity,
+                colorscale: [
+                    [0, 'rgb(52, 152, 219)'],
+                    [0.5, 'rgb(243, 156, 18)'],
+                    [1, 'rgb(231, 76, 60)']
+                ],
+                colorbar: {
+                    title: 'Field Strength',
+                    tickformat: '.2f'
+                },
+                opacity: 0.8
+            }];
+            
+            const layout = {
+                title: 'EMP Area Effect Visualization',
+                scene: {
+                    xaxis: { 
+                        title: 'X Distance (km)',
+                        // Format X axis exponents
+                        exponentformat: 'e',
+                        showexponent: 'all'
+                    },
+                    yaxis: { 
+                        title: 'Y Distance (km)',
+                        // Format Y axis exponents
+                        exponentformat: 'e',
+                        showexponent: 'all'
+                    },
+                    zaxis: { 
+                        title: 'Field Strength',
+                        // Format Z axis exponents
+                        exponentformat: 'e',
+                        showexponent: 'all'
+                    },
+                    camera: {
+                        eye: { x: 1.5, y: 1.5, z: 1 }
+                    },
+                    dragmode: 'orbit' // Enable 3D rotation
+                },
+                margin: { l:0, r:0, b:0, t:50 },
+                // Start the plot higher in the viewport
+                autosize: true
+            };
+            
+            // Config options to make it more interactive
+            const config = {
+                responsive: true,
+                displayModeBar: true, // Show the modebar
+                displaylogo: false,   // Hide the plotly logo
+                modeBarButtonsToAdd: [
+                    'resetCameraDefault',
+                    'resetViewMapbox'
+                ],
+                toImageButtonOptions: {
+                    format: 'png',
+                    filename: 'EMP_Area_Effect'
+                }
+            };
+            
+            // Find the plot3D element and set its style
+            const plot3DElement = document.getElementById('plot3D');
+            
+            // Render the plot
+            Plotly.newPlot('plot3D', data, layout, config);
+            
+            // Make it draggable within the parent container
+            makePlotlyDraggable(plot3DElement);
+        }
+
+        // Add a new function to make the Plotly container draggable
+                
+        function makePlotlyDraggable(element) {
+            // Create a draggable container if it doesn't exist
+            let container = document.getElementById('draggable3DContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'draggable3DContainer';
+                container.style.position = 'fixed'; // Changed from absolute to fixed for better positioning
+                container.style.top = '15%';  // Position at 15% from top instead of 30%
+                container.style.left = '50%';
+                container.style.transform = 'translate(-50%, 0)';
+                container.style.zIndex = '500'; // Increased z-index to ensure it's on top
+                container.style.background = 'white';
+                container.style.border = '1px solid #ddd';
+                container.style.borderRadius = '8px';
+                container.style.boxShadow = '0 8px 16px rgba(0,0,0,0.2)'; // Stronger shadow
+                container.style.padding = '10px';
+                container.style.resize = 'both';
+                container.style.overflow = 'hidden';
+                container.style.minWidth = '500px';
+                container.style.minHeight = '400px';
+                container.style.width = '80%';
+                container.style.maxWidth = '90%';
+                
+                // Add a header with controls
+                const header = document.createElement('div');
+                header.id = 'draggable3DHeader';
+                header.style.padding = '5px';
+                header.style.marginBottom = '10px';
+                header.style.borderBottom = '1px solid #eee';
+                header.style.display = 'flex';
+                header.style.justifyContent = 'space-between';
+                header.style.alignItems = 'center';
+                header.style.cursor = 'move'; // Show move cursor on header
+                
+                const title = document.createElement('h3');
+                title.textContent = 'EMP Influence Area Visualization';
+                title.style.margin = '0';
+                
+                const closeBtn = document.createElement('button');
+                closeBtn.innerHTML = '&times;';
+                closeBtn.style.background = 'none';
+                closeBtn.style.border = 'none';
+                closeBtn.style.fontSize = '20px';
+                closeBtn.style.cursor = 'pointer';
+                closeBtn.onclick = function() {
+                    container.style.display = 'none';
+                    // Switch back to the first chart tab
+                    chartTabs.forEach(tab => tab.classList.remove('active'));
+                    chartTabs[0].classList.add('active');
+                    currentChartType = 'empFieldStrength';
+                    updateChart();
+                };
+                
+                header.appendChild(title);
+                header.appendChild(closeBtn);
+                container.appendChild(header);
+                
+                // Add element to container
+                container.appendChild(element);
+                document.body.appendChild(container);
+                
+                // Make the container draggable
+                let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+                
+                header.onmousedown = dragMouseDown;
+                
+                function dragMouseDown(e) {
+                    e = e || window.event;
+                    e.preventDefault();
+                    // Get the mouse cursor position at startup
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    document.onmouseup = closeDragElement;
+                    // Call a function whenever the cursor moves
+                    document.onmousemove = elementDrag;
+                }
+                
+                function elementDrag(e) {
+                    e = e || window.event;
+                    e.preventDefault();
+                    // Calculate the new cursor position
+                    pos1 = pos3 - e.clientX;
+                    pos2 = pos4 - e.clientY;
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    
+                    // Set the element's new position
+                    container.style.top = (container.offsetTop - pos2) + "px";
+                    container.style.left = (container.offsetLeft - pos1) + "px";
+                    container.style.transform = 'none'; // Remove transform to avoid conflicts
+                }
+                
+                function closeDragElement() {
+                    // Stop moving when mouse button is released
+                    document.onmouseup = null;
+                    document.onmousemove = null;
+                }
+            } else {
+                // If container exists, just make sure it's visible and has the element
+                container.style.display = 'block';
+                if (!container.contains(element)) {
+                    container.appendChild(element);
+                }
+            }
+        }
+
+        function openSectorModal() {
+            sectorModal.classList.add('show');
+            
+            // Make modal draggable
+            const modalContent = sectorModal.querySelector('.modal-content');
+            makeDraggable(modalContent);
+        }
+
+        function closeSectorModalHandler() {
+            sectorModal.classList.remove('show');
+        }
+        
+        // Function to make an element draggable
+        function makeDraggable(element) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            
+            // Make the entire element draggable
+            element.style.cursor = 'move';
+            element.onmousedown = dragMouseDown;
+            
+            function dragMouseDown(e) {
+                // Ignore if the click is on a button, input or other interactive element
+                if (e.target.tagName === 'BUTTON' || 
+                    e.target.tagName === 'INPUT' || 
+                    e.target.tagName === 'SELECT' ||
+                    e.target.tagName === 'CANVAS' ||
+                    e.target.classList.contains('close-btn')) {
+                    return;
+                }
+                
+                e = e || window.event;
+                e.preventDefault();
+                // Get the mouse position at startup
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // Call a function whenever the cursor moves
+                document.onmousemove = elementDrag;
+            }
+            
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // Calculate the new cursor position
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                // Set the element's new position
+                element.style.top = (element.offsetTop - pos2) + "px";
+                element.style.left = (element.offsetLeft - pos1) + "px";
+                element.style.margin = 0; // Remove margin to avoid interference with positioning
+            }
+            
+            function closeDragElement() {
+                // Stop moving when mouse button is released
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+
+        function openResultsModal() {
+            // Populate results table
+            const tableBody = document.querySelector('#resultTable tbody');
+            tableBody.innerHTML = '';
+            
+            resultsData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                           <td>${row.Distance}</td>
+                           <td>${row.EMP_Field_Strength.toLocaleString()}</td>
+                           <td>${formatExponential(row.EMP_Intensity, 'html')}</td>
+                           <td>${row.Damage_Influence}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+            
+            resultsModal.classList.add('show');
+        }
+
+        function closeResultsModalHandler() {
+            resultsModal.classList.remove('show');
+        }
+
+        function showLoading() {
+            loadingSpinner.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            loadingSpinner.style.display = 'none';
+        }
+
+        function showAlert(message, type) {
+            const alertElement = document.getElementById('resultsAlert');
+            alertElement.className = `alert alert-${type}`;
+            alertElement.innerHTML = `<strong>${type === 'danger' ? 'Error!' : 'Success!'}</strong> ${message}`;
+            
+            if (!resultsSection.style.display || resultsSection.style.display === 'none') {
+                resultsSection.style.display = 'block';
+            }
+            
+            // Scroll to alert
+            alertElement.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetApplication() {
+            // Reset input fields
+            document.getElementById("strength").value = '1000';
+            document.getElementById("height").value = '100';
+            
+            // Hide results section
+            resultsSection.style.display = 'none';
+            
+            // Reset chart selections
+            chartTabs.forEach(tab => tab.classList.remove('active'));
+            chartTabs[0].classList.add('active');
+            currentChartType = 'empFieldStrength';
+            
+            // Disable buttons
+            viewSectorsBtn.disabled = true;
+            exportBtn.disabled = true;
+            
+            // Clear data
+            resultsData = [];
+            distances = [];
+            fieldStrengths = [];
+            intensities = [];
+            damageValues = [];
+            calculatedIntensity = null;
+            
+            // Destroy charts
+            if (empChartInstance) {
+                empChartInstance.destroy();
+                empChartInstance = null;
+            }
+            
+            if (sectorChartInstance) {
+                sectorChartInstance.destroy();
+                sectorChartInstance = null;
+            }
+        }
+
+        function runSectorAnalysis() {
+            showLoading();
+            
+            try {
+                // Get sector parameters from table
+                const sectorParams = {};
+                const rows = document.querySelectorAll('#sectorTable tbody tr');
+                
+                rows.forEach(row => {
+                    const sectorName = row.cells[0].textContent;
+                    const inputs = row.querySelectorAll('input[type="number"]');
+                    const values = Array.from(inputs).map(input => parseFloat(input.value));
+                    
+                    sectorParams[sectorName] = values;
+                });
+                
+                // Validate inputs
+                for (const [sector, values] of Object.entries(sectorParams)) {
+                    if (values.some(isNaN)) {
+                        throw new Error(`Invalid input in sector ${sector}`);
+                    }
+                    
+                    if (values[0] < 0 || values[0] > 1 || values[1] < 0 || values[1] > 1 || values[3] < 0 || values[3] > 1) {
+                        throw new Error(`Parameters R, M, and V must be between 0 and 1 for sector ${sector}`);
+                    }
+                    
+                    if (values[2] <= 0) {
+                        throw new Error(`Response time must be positive for sector ${sector}`);
+                    }
+                }
+                
+                // Calculate sector impacts
+                const sectorResults = calculateSectorImpacts(sectorParams);
+                
+                // Create sector chart
+                createSectorChart(sectorResults);
+                
+                hideLoading();
+            } catch (error) {
+                showAlert(`Sector Analysis Error: ${error.message}`, "danger");
+                hideLoading();
+            }
+        }
+
+        function calculateSectorImpacts(sectorParams) {
+            // This uses simplified formulas based on the Python implementation
+            const results = [];
+            const weights = [0.4, 0.4, 0.2]; // Weights for R, M, T
+            
+            for (const [sector, params] of Object.entries(sectorParams)) {
+                const [R, M, T, V] = params;
+                
+                // Normalize response time
+                const T_norm = Math.min(T / CONSTANTS.MAX_RESPONSE_TIME, 1.0);
+                
+                // Calculate preparedness index
+                const PI_base = (weights[0] * R + weights[1] * M + weights[2] * (1 - T_norm)) / 
+                                (weights[0] + weights[1] + weights[2]);
+                const PI = Math.pow(PI_base, 0.7); // Apply exponential boost
+                
+                // Scale down field strength for damage calculation
+                const baseFieldStrength = calculatedIntensity ? calculatedIntensity : 0;
+                const scaledField = baseFieldStrength / 1e6; // Convert to reasonable units
+                
+                // Calculate base damage
+                const baseDamage = scaledField * V * 0.01;
+                
+                // Apply preparedness reduction
+                const damageReduction = Math.pow(1 - PI, 3);
+                const damage = baseDamage * damageReduction;
+                
+                // Calculate probability
+                const I_scaled = Math.log1p(baseFieldStrength) * 0.01;
+                const P = 1 / (1 + Math.exp(-(0.5 * I_scaled - 0.8 * PI)));
+                
+                // Add to results
+                results.push({
+                    sector: sector,
+                    redundancy: R,
+                    mitigation: M,
+                    responseTime: T,
+                    vulnerability: V,
+                    preparednessIndex: PI,
+                    probability: P,
+                    damage: Math.min(1, Math.max(0, damage))
+                });
+            }
+            
+            return results;
+        }
+
+        function createSectorChart(sectorResults) {
+            // Show chart container
+            document.getElementById('sectorChartContainer').style.display = 'block';
+            
+            // Prepare data
+            const sectors = sectorResults.map(r => r.sector);
+            const preparedness = sectorResults.map(r => r.preparednessIndex);
+            const probabilities = sectorResults.map(r => r.probability);
+            const damages = sectorResults.map(r => r.damage);
+            
+            // Destroy previous chart if exists
+            if (sectorChartInstance) {
+                sectorChartInstance.destroy();
+            }
+            
+            // Create new chart
+            const ctx = document.getElementById('sectorChart').getContext('2d');
+            sectorChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sectors,
+                    datasets: [
+                        {
+                            label: 'Preparedness Index',
+                            data: preparedness,
+                            backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                            borderColor: 'rgb(46, 204, 113)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Probability of Impact',
+                            data: probabilities,
+                            backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                            borderColor: 'rgb(52, 152, 219)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Damage Level',
+                            data: damages,
+                            backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                            borderColor: 'rgb(231, 76, 60)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Sector'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Value (0-1 scale)'
+                            },
+                            beginAtZero: true,
+                            max: 1
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Sector Impact Analysis'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw.toFixed(3)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function exportResults() {
+            if (!resultsData || resultsData.length === 0) {
+                showAlert("No data to export. Run analysis first.", "warning");
+                return;
+            }
+            
+            try {
+                // Create CSV content
+                let csvContent = "data:text/csv;charset=utf-8,";
+                csvContent += "Distance (km),EMP Field Strength (V/m),EMP Intensity,Damage Influence\n";
+                
+                resultsData.forEach(row => {
+                    csvContent += `${row.Distance},${row.EMP_Field_Strength},${row.EMP_Intensity},${row.Damage_Influence}\n`;
+                });
+                
+                // Create download link
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `EMP_Analysis_Results_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.csv`);
+                document.body.appendChild(link);
+                
+                // Trigger download
+                link.click();
+                document.body.removeChild(link);
+            } catch (error) {
+                showAlert(`Export Error: ${error.message}`, "danger");
+            }
+        }
+
+        function downloadResults() {
+            if (!resultsData || resultsData.length === 0) {
+                showAlert("No data to download. Run analysis first.", "warning");
+                return;
+            }
+            
+            try {
+                // Create CSV content
+                let csvContent = "data:text/csv;charset=utf-8,";
+                csvContent += "Distance (km),EMP Field Strength (V/m),EMP Intensity,Damage Influence\n";
+                
+                resultsData.forEach(row => {
+                    csvContent += `${row.Distance},${row.EMP_Field_Strength},${row.EMP_Intensity},${row.Damage_Influence}\n`;
+                });
+                
+                // Create download link
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `EMP_Analysis_Results_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.csv`);
+                document.body.appendChild(link);
+                
+                // Trigger download
+                link.click();
+                document.body.removeChild(link);
+                
+                // Close modal
+                closeResultsModalHandler();
+            } catch (error) {
+                showAlert(`Download Error: ${error.message}`, "danger");
+            }
+        }
+    </script>
+</body>
+</html>
